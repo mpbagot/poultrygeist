@@ -1,0 +1,16 @@
+After some basic planning, I began, in classic Mitchell Bagot style, to code a basic framework for our game.
+In addition to the basic Panda3D framework, our game will utilise the shaders and rendering of tobspr's RenderPipeline. Using this modified pipeline for rendering will vastly improve the quality of the lighting within our game, without requiring us to write our own GLSL shaders for Panda3D.
+After compiling the RenderPipeline's C++ modules and recompiling Panda3D for Python 3.4, I created a small framework for our game.
+Due to our group's experience with Pygame and it's per-frame update code, getting used to registering Panda3D's Tasks and event hooks would be too complex given the time constraints of the task.
+To solve this issue, I decided to create a special Scene Manager class to handle our game's scene switching and per-frame event handling. Whenever the player changes to a new scene the new scene is loaded in place of the old one and the new required tasks and events are loaded into the per-frame task of the scene manager.
+
+
+
+Our game begins in a cornfield, so to test the capabilities of both Panda3D and tobspr's Render Pipeline, I created a huge corn array to test the frame rate.
+After launching the game, I immediately encountered a problem. I was only able to achieve 7 fps. Whilst I hadn't expected amazing frame rates due to the high quality rendering effects of the Pipeline, this was entirely unexpected.
+To attempt to debug the issue, I removed everything and ran an empty scene. This only bumped the frame rate up to 9 fps. After some rewriting of the code, the game now runs at 11 fps.
+However, after testing the game on Edward's GPU, which achieved over 50 fps, I realised that the issue was not the game, just my laptop's GPU. Regardless, my end goal is to ensure that the game doesn't run below 5 fps on my laptop when compiled to an executable.
+
+
+
+
