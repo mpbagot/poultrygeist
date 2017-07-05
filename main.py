@@ -32,13 +32,16 @@ class Application(ShowBase):
 	'''
 	def __init__(self):
 		# Set the model quality, (super-low, low or high)
-		self.quality = "high"
+		self.quality = "super-low"
 		print("[>] PoultryGeist:\t      Setting Model Resolution to {}".format(
 		self.quality.upper()))
 
 		# Run the standard Showbase init if running in super-low resolution mode
 		if self.quality == 'super-low':
 			super().__init__()
+
+		# Enable particles and physics
+		self.enableParticles()
 
 		#Modify the Panda3D config on-the-fly
 		#In this case, edit the window title

@@ -4,9 +4,9 @@ from direct.gui.OnscreenImage import OnscreenImage
 from direct.actor.Actor import Actor
 
 # Import the Panda3D C++ modules
-from panda3d.core import TransparencyAttrib, Vec3, Fog, LPoint3, VBase4
+from panda3d.core import TransparencyAttrib, Vec3, Fog, LPoint3, VBase4, BitMask32
 from panda3d.core import AmbientLight, DirectionalLight
-from panda3d.bullet import BulletWorld
+from panda3d.physics import *
 from panda3d.ai import *
 
 # Import the RenderPipeline modules
@@ -19,7 +19,7 @@ class Scene:
 	Holds all of the required details about a scene of the game. Including tasks
 	and render tree for Panda3D.
 	'''
-	def addObject(self, modelName, pos=(0,0,0), scale=(1,1,1), instanceTo=None, isActor=False, key=None, anims={}, parent=None):
+	def addObject(self, modelName, pos=(0,0,0), scale=(1,1,1), instanceTo=None, isActor=False, key=None, anims={}, parent=None, hasPhysics=False):
 		'''
 		Adds a model to the Scenes render tree
 		'''
@@ -33,8 +33,18 @@ class Scene:
 			# Set the position and scale of the model
 			model.setPos(*pos)
 			model.setScale(*scale)
-			# Parent the model to either the render tree or the parent (if applicable)
-			model.reparentTo(self.renderTree if parent is None else self.models.get(parent))
+			if hasPhysics:
+				actorNode = ActorNode("physics-node-"+modelName)
+				if parent is None:
+					actorNodePath = render.attachNewNode(actorNode)
+				else:
+					actorNodePath = self.models.get(parent).attachNewNode(actorNode)
+				self.app.physicsMgr.attachPhysicalNode(actorNode)
+
+				model.reparentTo(actorNodePath)
+			else:
+				# Parent the model to either the render tree or the parent (if applicable)
+				model.reparentTo(self.renderTree if parent is None else self.models.get(parent))
 		else:
 			# If the model is being instanced to an existing model
 			model = self.addInstance(pos, scale, instanceTo)
@@ -168,7 +178,7 @@ class IntroScene(Scene):
 		Set up the movement controller and begin the motion path.
 		'''
 		# Make the motion path
-		mopath = (
+		motionPath = (
 			(Vec3(0, -63, 4), Vec3(0, 0, 0)),
 			(Vec3(0, -63, 4), Vec3(0, 0, 0)),
 			(Vec3(0, -63, 4), Vec3(0, 0, 0)),
@@ -190,7 +200,7 @@ class IntroScene(Scene):
 		# Run the setup on the movement controller
 		self.app.controller.update_task = self.app.addTask(nullTask, 'meh')
 		# Play the pre-defined motion path
-		self.app.controller.play_motion_path(mopath, 0.8)
+		self.app.controller.play_motion_path(motionPath, 0.8)
 		# Remove the player movement controls
 		self.app.taskMgr.remove(self.app.controller.update_task)
 
@@ -231,7 +241,6 @@ class IntroScene(Scene):
 		alpha = task.time / 4
 		# set the alpha level on the rectangle
 		self.fadeQuad.setAlphaScale(1-alpha)
-		# print(dir(self.fadeQuad))
 		return Task.cont
 
 class SceneOne(Scene):
@@ -245,14 +254,50 @@ class SceneOne(Scene):
 		# Add the AIWorld
 		self.aiWorld = AIWorld(self.renderTree)
 
+		# Create a force node for the physics engine
+		self.gravityForceNode = ForceNode('gravity')
+		# Apply gravitational level of force to it
+		gravityForce = LinearVectorForce(0, 0, -0.3)
+		# Add the force to the force node
+		self.gravityForceNode.addForce(gravityForce)
+		# Attach the node to the tree
+		gravityNodePath = self.renderTree.attachNewNode(self.gravityForceNode)
+		# Add the force to the physics manager
+		self.app.physicsMgr.addLinearForce(gravityForce)
+
+		# # Add the capsule shape for the player
+		# playerColliderShape = BulletCapsuleShape(0.5, 3, ZUp)
+		#
+		# # Add the character controller
+		# self.playerController = BulletCharacterControllerNode(playerColliderShape, 1, 'Player')
+		# self.playerNodePath = self.renderTree.attachNewNode(self.playerController)
+		# self.playerNodePath.setPos(0, 0, 3.2)
+		# self.playerNodePath.setCollideMask(BitMask32.allOn())
+		#
+		# # Add the player to the bullet world
+		# self.bulletWorld.attachCharacter(self.playerNodePath.node())
+		#
+		# debugNode = BulletDebugNode('Debug')
+		# debugNode.showWireframe(True)
+		# debugNode.showConstraints(True)
+		# debugNode.showBoundingBoxes(True)
+		# debugNode.showNormals(True)
+		# debugNodePath = self.renderTree.attachNewNode(debugNode)
+		# debugNodePath.show()
+		#
+		# self.bulletWorld.setDebugNode(debugNodePath.node())
+
 	def eventRun(self, task):
+		# Update the ai tasks
 		self.aiWorld.update()
+		# Update the physics of the world.
+		# self.bulletWorld.doPhysics(task.time - self.app.sceneMgr.last)
 		return Task.cont
 
 	def initScene(self):
-		# Add the physics world and set the gravity on it
-		self.bulletWorld = BulletWorld()
-		self.bulletWorld.setGravity(Vec3(0, 0, -9.81))
+		print('initing scene')
+		# Set the gravity on the physics world
+		# self.bulletWorld.setGravity(Vec3(0, 0,-0.2))
 
 
 def nullTask(task):
