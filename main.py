@@ -14,6 +14,7 @@ from direct.task.Task import Task
 from rpcore import RenderPipeline
 
 import sys
+from copy import deepcopy
 from time import sleep
 import math
 
@@ -71,12 +72,13 @@ class Application(ShowBase):
 		self.disableMouse()
 
 		# Hide the cursor
-		props = WindowProperties()
-		props.setCursorHidden(True)
-		props.setMouseMode(WindowProperties.M_relative)
+		self.props = WindowProperties()
 		# Lower the FOV to make the game more difficult
-		self.win.requestProperties(props)
+		self.win.requestProperties(self.props)
 		self.camLens.setFov(60)
+
+		# Store and empty renderTree for later use
+		self.emptyRenderTree = deepcopy(self.render)
 
 		# Register the buttons for movement
 		# TODO remove this and overhaul the button handling
@@ -90,6 +92,12 @@ class Application(ShowBase):
 
 		# Add the sceneMgr events to run as a task
 		taskMgr.add(self.sceneMgr.runSceneTasks, "scene-tasks")
+
+	def dumpTree(self):
+
+		print('Dumping render tree of application')
+		for child in self.render.getChildren():
+			print(child)
 
 	def move(self, forward, dir, elapsed):
 		'''
@@ -127,15 +135,21 @@ class SceneManager:
 		Load a new scene into the game
 		'''
 		self.sceneFrame = 1
-		# TODO Fix this to actually work
-		# if self.scene:
-		# 	for child in self.app.render.getChildren():
-		# 		child.detachNode()
-		# 		print(child)
+		# Run the end of scene events
+		if isinstance(self.scene, Scene):
+			self.scene.exitScene()
+
+		# Iterate and detach all of the old nodes
+		for child in self.app.render.getChildren():
+			if not str(child).endswith('camera'):
+				child.detachNode()
+
 		self.scene = scene
-		self.app.render = self.scene.renderTree
-		# for child in scene.renderTree.getChildren():
-		# 	child.reparentTo(self.app.render)
+		# Reparent the scene tree to the main render tree
+		for child in self.scene.renderTree.getChildren():
+			if not str(child).endswith('camera'):
+				child.reparentTo(self.app.render)
+
 		if self.app.quality == 'super-low':
 			# set up auto shaders
 			self.app.render.setShaderAuto()
