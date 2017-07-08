@@ -1,16 +1,20 @@
 # Import the Panda3D Python modules
 from direct.task.Task import Task
 from direct.gui.OnscreenImage import OnscreenImage
+from direct.gui.DirectGui import *
 from direct.actor.Actor import Actor
 
 # Import the Panda3D C++ modules
 from panda3d.core import TransparencyAttrib, Vec3, Fog, LPoint3, VBase4, BitMask32
 from panda3d.core import AmbientLight, DirectionalLight
+from panda3d.core import WindowProperties
 from panda3d.physics import *
 from panda3d.ai import *
 
 # Import the RenderPipeline modules
 from rpcore.util.movement_controller import MovementController
+
+from copy import deepcopy
 
 from entity import *
 
@@ -36,7 +40,7 @@ class Scene:
 			if hasPhysics:
 				actorNode = ActorNode("physics-node-"+modelName)
 				if parent is None:
-					actorNodePath = render.attachNewNode(actorNode)
+					actorNodePath = self.renderTree.attachNewNode(actorNode)
 				else:
 					actorNodePath = self.models.get(parent).attachNewNode(actorNode)
 				self.app.physicsMgr.attachPhysicalNode(actorNode)
@@ -88,9 +92,20 @@ class Scene:
 			# Add the model as a static model
 			return self.loader.loadModel(modelName)
 
+	def dumpTree(self):
+		print('Dumping render tree from scene')
+		for child in self.renderTree.getChildren():
+			print(child)
+
 	def initScene(self):
 		'''
-		A placeholder function for running events when the scene is first loaded
+		A event hook method for running events when the scene is first loaded
+		'''
+		pass
+
+	def exitScene(self):
+		'''
+		An event hook method for running events as the scene is exited
 		'''
 		pass
 
@@ -104,7 +119,28 @@ class MenuScene(Scene):
 		self.isPlayerControlled = False
 		self.models = {}
 		self.loader = app.loader
-		self.renderTree = app.render
+		self.renderTree = deepcopy(app.emptyRenderTree)
+
+		playButton = DirectButton(text=('normal','pressed','rollover','disabled'),
+								pos=(0,0,0), frameSize=(-0.3, 0.3, -0.1, 0.1),
+								text_scale=(0.3, 0.2))
+
+	def __str__(self):
+		return 'MenuScene object'
+
+	def initScene(self):
+		'''
+		Run events upon starting the scene
+		'''
+		self.app.props.setMouseMode(WindowProperties.M_absolute)
+		self.app.props.setCursorHidden(False)
+
+	def exitScene(self):
+		'''
+		Run events upon exiting the scene
+		'''
+		self.app.props.setMouseMode(WindowProperties.M_relative)
+		self.app.props.setCursorHidden(True)
 
 	def eventRun(self, task):
 		return Task.cont
@@ -120,7 +156,7 @@ class IntroScene(Scene):
 		self.isPlayerControlled = False
 		self.models = {}
 		self.loader = app.loader
-		self.renderTree = app.render
+		self.renderTree = deepcopy(app.emptyRenderTree)
 
 		# Add the ground model
 		self.addObject("ground.bam".format(app.quality), scale=(3.6,3.6,2), key="ground")
@@ -153,13 +189,21 @@ class IntroScene(Scene):
 			self.renderTree.setFog(fog)
 			# Set the scene's background colour
 			base.setBackgroundColor(0.635, 0.454, 0.494)
-			# Add the sun lamp spotlight
-			# light = DirectionalLight('light')
-			# light.setColor(VBase4(1, 1, 1, 1))
-			# lightNodePath = render.attachNewNode(light)
-			# lightNodePath.setPos(10, -80, 7)
-			# lightNodePath.lookAt(barnModel)
-			# self.renderTree.setLight(lightNodePath)
+			
+		# Add the two chickens
+		self.chickenOne = Chicken(self, (20, -50, 0))
+		self.chickenOne.aiChar.setMaxForce(30)
+		self.chickenTwo = Chicken(self, (-20, -40, 0))
+		self.chickenTwo.aiChar.setMaxForce(30)
+
+		# Add them to the AI World
+		self.AIworld.addAiChar(self.chickenOne.aiChar)
+		self.AIworld.addAiChar(self.chickenTwo.aiChar)
+
+		# Enable the pursue behaviour
+		# TODO Fix this because the app.camera doesnt exist due to the scene swapper
+		self.chickenOne.aiBehaviour.pursue(self.app.camera)
+		self.chickenTwo.aiBehaviour.pursue(self.app.camera)
 
 	def eventRun(self, task):
 		'''
@@ -215,20 +259,6 @@ class IntroScene(Scene):
 		# Add the fadein transition
 		self.app.taskMgr.add(self.fadeIn, 'fade-task')
 
-		# Add the two chickens
-		self.chickenOne = Chicken(self, (20, -50, 0))
-		self.chickenOne.aiChar.setMaxForce(30)
-		self.chickenTwo = Chicken(self, (-20, -40, 0))
-		self.chickenTwo.aiChar.setMaxForce(30)
-
-		# Add them to the AI World
-		self.AIworld.addAiChar(self.chickenOne.aiChar)
-		self.AIworld.addAiChar(self.chickenTwo.aiChar)
-
-		# Enable the pursue behaviour
-		self.chickenOne.aiBehaviour.pursue(self.app.camera)
-		self.chickenTwo.aiBehaviour.pursue(self.app.camera)
-
 	def fadeIn(self, task):
 		'''
 		Fade in the scene by fading a big, black rectangle
@@ -249,7 +279,7 @@ class SceneOne(Scene):
 		self.isPlayerControlled = True
 		self.models = {}
 		self.loader = app.loader
-		self.renderTree = app.render
+		self.renderTree = deepcopy(app.emptyRenderTree)
 
 		# Add the AIWorld
 		self.aiWorld = AIWorld(self.renderTree)
@@ -295,9 +325,9 @@ class SceneOne(Scene):
 		return Task.cont
 
 	def initScene(self):
-		print('initing scene')
 		# Set the gravity on the physics world
 		# self.bulletWorld.setGravity(Vec3(0, 0,-0.2))
+		pass
 
 
 def nullTask(task):
