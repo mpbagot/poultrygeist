@@ -7,7 +7,6 @@ You'll Be Running Chicken
 """
 # Import the Python Panda3D modules
 from direct.showbase.ShowBase import ShowBase
-from direct.filter.CommonFilters import *
 from direct.task.Task import Task
 
 # Import the main render pipeline class
