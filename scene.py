@@ -5,9 +5,10 @@ from direct.gui.DirectGui import *
 from direct.actor.Actor import Actor
 
 # Import the Panda3D C++ modules
-from panda3d.core import TransparencyAttrib, Vec3, Fog, LPoint3, VBase4, BitMask32
-from panda3d.core import AmbientLight, DirectionalLight
-from panda3d.core import WindowProperties
+from panda3d.core import *
+# from panda3d.core import TransparencyAttrib, Vec3, Fog, LPoint3, VBase4, BitMask32
+# from panda3d.core import AmbientLight, DirectionalLight
+# from panda3d.core import WindowProperties,
 from panda3d.physics import *
 from panda3d.ai import *
 
@@ -23,7 +24,7 @@ class Scene:
 	Holds all of the required details about a scene of the game. Including tasks
 	and render tree for Panda3D.
 	'''
-	def addObject(self, modelName, pos=(0,0,0), scale=(1,1,1), instanceTo=None, isActor=False, key=None, anims={}, parent=None, hasPhysics=False):
+	def addObject(self, modelName, pos=(0,0,0), scale=(1,1,1), instanceTo=None, isActor=False, key=None, anims={}, parent=None, hasPhysics=False, collider=None):
 		'''
 		Adds a model to the Scenes render tree
 		'''
@@ -37,17 +38,22 @@ class Scene:
 			# Set the position and scale of the model
 			model.setPos(*pos)
 			model.setScale(*scale)
+			# If physics need to be enabled, parent the object below a physics actor node
 			if hasPhysics:
 				actorNode = ActorNode("physics-node-"+modelName)
+				# Parent to the chosen parent, either existing nodepath or the scene graph
 				if parent is None:
 					actorNodePath = self.renderTree.attachNewNode(actorNode)
 				else:
 					actorNodePath = self.models.get(parent).attachNewNode(actorNode)
+				# Attach the actor to the physics manager
 				self.app.physicsMgr.attachPhysicalNode(actorNode)
-
+				# reparent the model to the actor node
 				model.reparentTo(actorNodePath)
+				if collider:
+					collider.reparentTo(actorNodePath)
 			else:
-				# Parent the model to either the render tree or the parent (if applicable)
+				# Parent the model to either the render tree or the parent
 				model.reparentTo(self.renderTree if parent is None else self.models.get(parent))
 		else:
 			# If the model is being instanced to an existing model
@@ -92,11 +98,6 @@ class Scene:
 			# Add the model as a static model
 			return self.loader.loadModel(modelName)
 
-	def dumpTree(self):
-		print('Dumping render tree from scene')
-		for child in self.renderTree.getChildren():
-			print(child)
-
 	def initScene(self):
 		'''
 		A event hook method for running events when the scene is first loaded
@@ -115,23 +116,28 @@ class MenuScene(Scene):
 	and all of it's required tasks + events
 	'''
 	def __init__(self, app):
+		'''
+		Initialise and run any events BEFORE loading the scene
+		'''
 		self.app = app
 		self.isPlayerControlled = False
 		self.models = {}
 		self.loader = app.loader
 		self.renderTree = deepcopy(app.emptyRenderTree)
 
+		# Add the play button
 		playButton = DirectButton(text=('normal','pressed','rollover','disabled'),
 								pos=(0,0,0), frameSize=(-0.3, 0.3, -0.1, 0.1),
 								text_scale=(0.3, 0.2))
+		# Add the options menu button
+		# Add the quit button
 
-	def __str__(self):
-		return 'MenuScene object'
 
 	def initScene(self):
 		'''
 		Run events upon starting the scene
 		'''
+		# Unhide the mouse and allow it free movement
 		self.app.props.setMouseMode(WindowProperties.M_absolute)
 		self.app.props.setCursorHidden(False)
 
@@ -139,10 +145,14 @@ class MenuScene(Scene):
 		'''
 		Run events upon exiting the scene
 		'''
+		# Hide the mouse and center it in the window
 		self.app.props.setMouseMode(WindowProperties.M_relative)
 		self.app.props.setCursorHidden(True)
 
 	def eventRun(self, task):
+		'''
+		Run constantly updating events
+		'''
 		return Task.cont
 
 
@@ -152,6 +162,9 @@ class IntroScene(Scene):
 	and all of it's required tasks + events
 	'''
 	def __init__(self, app):
+		'''
+		Initialise and run any events BEFORE loading the scene
+		'''
 		self.app = app
 		self.isPlayerControlled = False
 		self.models = {}
@@ -170,7 +183,7 @@ class IntroScene(Scene):
 		# Iterate a 25x25 square for the corn
 		for x in range(25):
 			for z in range(25):
-				# Use amazing maths skills to create a 'lollypop' shape cutout
+				# Use basic maths to create a 'lollypop' shape cutout
 				if (x-12)**2+(z-12)**2 > 25 and (abs(x-12) > 1 or z > 12):
 					# Add a corn instance to the scene
 					self.addObject("corn.egg".format(app.quality), (x*5, z*5, 0), instanceTo="corn")
@@ -189,8 +202,8 @@ class IntroScene(Scene):
 			self.renderTree.setFog(fog)
 			# Set the scene's background colour
 			base.setBackgroundColor(0.635, 0.454, 0.494)
-			
-		# Add the two chickens
+
+		# Add the two chickens and set the maximum velocity (force) on them
 		self.chickenOne = Chicken(self, (20, -50, 0))
 		self.chickenOne.aiChar.setMaxForce(30)
 		self.chickenTwo = Chicken(self, (-20, -40, 0))
@@ -201,19 +214,20 @@ class IntroScene(Scene):
 		self.AIworld.addAiChar(self.chickenTwo.aiChar)
 
 		# Enable the pursue behaviour
-		# TODO Fix this because the app.camera doesnt exist due to the scene swapper
 		self.chickenOne.aiBehaviour.pursue(self.app.camera)
 		self.chickenTwo.aiBehaviour.pursue(self.app.camera)
 
 	def eventRun(self, task):
 		'''
-		Run a non-stop check for the completion of the motion path
+		Run any constant events for the scene
 		'''
+		# If the movement controller has finished its path then
 		if self.app.controller and self.app.controller.clock_obj.get_frame_time() > self.app.controller.curve_time_end:
 			# delete the motion controller
 			self.app.controller = None
 			# Load the first scene of the gameplay
 			self.app.sceneMgr.loadScene(SceneOne(self.app))
+		# Update the AI world
 		self.AIworld.update()
 		return Task.cont
 
@@ -263,7 +277,7 @@ class IntroScene(Scene):
 		'''
 		Fade in the scene by fading a big, black rectangle
 		'''
-		# If more than two seconds have passed then finish the task
+		# If more than 4 seconds have passed then finish the task
 		if task.time > 4:
 			self.fadeQuad.destroy()
 			return
@@ -275,6 +289,9 @@ class IntroScene(Scene):
 
 class SceneOne(Scene):
 	def __init__(self, app):
+		'''
+		Initialise and run any events BEFORE loading the scene
+		'''
 		self.app = app
 		self.isPlayerControlled = True
 		self.models = {}
@@ -294,6 +311,9 @@ class SceneOne(Scene):
 		gravityNodePath = self.renderTree.attachNewNode(self.gravityForceNode)
 		# Add the force to the physics manager
 		self.app.physicsMgr.addLinearForce(gravityForce)
+
+		self.player = Player(self.app)
+		self.player.addToScene()
 
 		# # Add the capsule shape for the player
 		# playerColliderShape = BulletCapsuleShape(0.5, 3, ZUp)
@@ -318,6 +338,9 @@ class SceneOne(Scene):
 		# self.bulletWorld.setDebugNode(debugNodePath.node())
 
 	def eventRun(self, task):
+		'''
+		Run any constant events for the scene
+		'''
 		# Update the ai tasks
 		self.aiWorld.update()
 		# Update the physics of the world.
@@ -325,6 +348,9 @@ class SceneOne(Scene):
 		return Task.cont
 
 	def initScene(self):
+		'''
+		Run any events AFTER loading the scene
+		'''
 		# Set the gravity on the physics world
 		# self.bulletWorld.setGravity(Vec3(0, 0,-0.2))
 		pass
