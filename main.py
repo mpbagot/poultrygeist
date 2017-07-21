@@ -8,6 +8,7 @@ You'll Be Running Chicken
 # Import the Python Panda3D modules
 from direct.showbase.ShowBase import ShowBase
 from direct.task.Task import Task
+from direct.filter.CommonFilters import CommonFilters
 
 # Import the main render pipeline class
 from rpcore import RenderPipeline
@@ -25,6 +26,8 @@ from panda3d.core import LVector3
 #Import the external files from this project
 from scene import *
 
+# from main_menu import *
+
 class Application(ShowBase):
 	'''
 	The default Application class which holds the code for
@@ -37,8 +40,23 @@ class Application(ShowBase):
 		self.quality.upper()))
 
 		# Run the standard Showbase init if running in super-low resolution mode
-		if self.quality == 'super-low':
+		# Do some stuff if the game is running at normal or high resolution
+		if self.quality != 'super-low':
+			# Construct and create the pipeline
+			self.render_pipeline = RenderPipeline()
+			self.render_pipeline.pre_showbase_init()
 			super().__init__()
+			self.render_pipeline.create(self)
+			# Enable anti-aliasing for the game
+			render.setAntialias(AntialiasAttrib.MAuto)
+			# Set the time pipeline lighting simulation time
+			self.render_pipeline.daytime_mgr.time = "20:15"
+
+		else:
+			super().__init__()
+			# Enable the filter handler
+			self.filters = CommonFilters(base.win, base.cam)
+			self.filters.setAmbientOcclusion()
 
 		# Enable particles and physics
 		self.enableParticles()
@@ -57,21 +75,15 @@ class Application(ShowBase):
 		# Initialise the movement controller
 		self.controller = None
 
-		# Do some stuff if the game is running at normal or high resolution
-		if self.quality != 'super-low':
-			# Construct and create the pipeline
-			self.render_pipeline = RenderPipeline()
-			self.render_pipeline.create(self)
-			# Enable anti-aliasing for the game
-			render.setAntialias(AntialiasAttrib.MAuto)
-			# Set the time pipeline lighting simulation time
-			self.render_pipeline.daytime_mgr.time = "20:15"
 
 		# Turn off normal mouse controls
 		self.disableMouse()
 
+
 		# Hide the cursor
 		self.props = WindowProperties()
+		#
+		self.props.setCursorHidden(True)
 		# Lower the FOV to make the game more difficult
 		self.win.requestProperties(self.props)
 		self.camLens.setFov(60)
@@ -92,12 +104,6 @@ class Application(ShowBase):
 		# Add the sceneMgr events to run as a task
 		taskMgr.add(self.sceneMgr.runSceneTasks, "scene-tasks")
 
-	def dumpTree(self):
-
-		print('Dumping render tree of application')
-		for child in self.render.getChildren():
-			print(child)
-
 	def move(self, forward, dir, elapsed):
 		'''
 		Move the camera forward or backwards
@@ -108,7 +114,8 @@ class Application(ShowBase):
 		else:
 			self.sceneMgr.focus -= dir * elapsed * 30
 		# Set the position of the camera based on the direction
-		self.camera.setPos(self.sceneMgr.focus - (dir * 5))
+		self.sceneMgr.scene.player.nodePath.setPos(self.sceneMgr.focus - (dir * 5))
+		print(self.sceneMgr.scene.player.nodePath.getPos())
 
 class SceneManager:
 	'''
@@ -242,4 +249,5 @@ class SceneManager:
 		self.app.camera.setP(pitch)
 
 # Run the application
+# MainMenu(Application).run()
 Application().run()
