@@ -18,6 +18,7 @@ from rpcore.util.movement_controller import MovementController
 from copy import deepcopy
 
 from entity import *
+from player import *
 
 class Scene:
 	'''
@@ -50,8 +51,9 @@ class Scene:
 				self.app.physicsMgr.attachPhysicalNode(actorNode)
 				# reparent the model to the actor node
 				model.reparentTo(actorNodePath)
+				colliderNodePath = self.addColliderNode(parent)
 				if collider:
-					collider.reparentTo(actorNodePath)
+					colliderNodePath.node().addSolid(collider)
 			else:
 				# Parent the model to either the render tree or the parent
 				model.reparentTo(self.renderTree if parent is None else self.models.get(parent))
@@ -85,6 +87,15 @@ class Scene:
 
 		# Return the nodepath
 		return model
+
+	def addColliderNode(self, parent=None):
+		'''
+		Add an empty colliderNode to the render tree
+		'''
+		if parent:
+			return self.models.get(parent).attachNewNode(CollisionNode('cnode'))
+		else:
+			return self.renderTree.attachNewNode(CollisionNode('cnode'))
 
 	def loadModel(self, modelName, isActor, anims):
 		'''
@@ -126,9 +137,9 @@ class MenuScene(Scene):
 		self.renderTree = deepcopy(app.emptyRenderTree)
 
 		# Add the play button
-		playButton = DirectButton(text=('normal','pressed','rollover','disabled'),
-								pos=(0,0,0), frameSize=(-0.3, 0.3, -0.1, 0.1),
-								text_scale=(0.3, 0.2))
+		# playButton = DirectButton(text=('normal','pressed','rollover','disabled'),
+		# 						pos=(0,0,0), frameSize=(-0.3, 0.3, -0.1, 0.1),
+		# 						text_scale=(0.3, 0.2))
 		# Add the options menu button
 		# Add the quit button
 
@@ -146,8 +157,8 @@ class MenuScene(Scene):
 		Run events upon exiting the scene
 		'''
 		# Hide the mouse and center it in the window
-		self.app.props.setMouseMode(WindowProperties.M_relative)
 		self.app.props.setCursorHidden(True)
+		self.app.props.setMouseMode(WindowProperties.M_relative)
 
 	def eventRun(self, task):
 		'''
@@ -314,6 +325,11 @@ class SceneOne(Scene):
 
 		self.player = Player(self.app)
 		self.player.addToScene()
+
+		# self.groundNodePath = self.addColliderNode()
+		# self.groundCollider = CollisionPlane()
+		# self.groundNodePath.node().addSolid(self.groundCollider)
+		# self.groundNodePath.show()
 
 		# # Add the capsule shape for the player
 		# playerColliderShape = BulletCapsuleShape(0.5, 3, ZUp)
