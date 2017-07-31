@@ -25,12 +25,12 @@ class Scene:
 	Holds all of the required details about a scene of the game. Including tasks
 	and render tree for Panda3D.
 	'''
-	def addObject(self, modelName, pos=(0,0,0), scale=(1,1,1), instanceTo=None, isActor=False, key=None, anims={}, parent=None, hasPhysics=False, collider=None):
+	def addObject(self, modelName, pos=(0,0,0), scale=(1,1,1), instanceTo=None, isActor=False, key=None, anims={}, parent=None, isGeneric=False, hasPhysics=False, collider=None):
 		'''
 		Adds a model to the Scenes render tree
 		'''
 		# Automatically adjust the model path
-		modelName = 'resources/{}/'.format(self.app.quality)+modelName
+		modelName = 'resources/{}/'.format(self.app.quality if not isGeneric else 'generic')+modelName
 
 		# Check if the model is being instanced to an existing model
 		if instanceTo is None:
@@ -183,13 +183,13 @@ class IntroScene(Scene):
 		self.renderTree = deepcopy(app.emptyRenderTree)
 
 		# Add the ground model
-		self.addObject("ground.bam".format(app.quality), scale=(3.6,3.6,2), key="ground")
+		self.addObject("ground.bam", scale=(3.6,3.6,2), key="ground")
 
 		# Add the barn
-		barnModel = self.addObject("barn.bam".format(app.quality), scale=(1, 1, 1))
+		barnModel = self.addObject("barn.bam", scale=(1, 1, 1))
 
 		# Create a corn model and add it in the bottom corner
-		self.addObject("corn.egg".format(app.quality), pos=(-62, -62, 0), scale=(1, 1, 1.3), key="corn")
+		self.addObject("corn.egg", pos=(-62, -62, 0), scale=(1, 1, 1.3), key="corn")
 
 		# Iterate a 25x25 square for the corn
 		for x in range(25):
@@ -197,7 +197,7 @@ class IntroScene(Scene):
 				# Use basic maths to create a 'lollypop' shape cutout
 				if (x-12)**2+(z-12)**2 > 25 and (abs(x-12) > 1 or z > 12):
 					# Add a corn instance to the scene
-					self.addObject("corn.egg".format(app.quality), (x*5, z*5, 0), instanceTo="corn")
+					self.addObject("corn.egg", (x*5, z*5, 0), instanceTo="corn")
 
 		# Add the AI World
 		self.AIworld = AIWorld(self.renderTree)
@@ -325,6 +325,10 @@ class SceneOne(Scene):
 
 		self.player = Player(self.app)
 		self.player.addToScene()
+
+		# self.addObject('scene1.bam', scale=(10, 10, 10), key="main_ground", isGeneric=True)
+		self.addObject("scene1.bam", scale=(3.6,3.6,3.6), key="ground", isGeneric=True)
+
 
 		# self.groundNodePath = self.addColliderNode()
 		# self.groundCollider = CollisionPlane()
