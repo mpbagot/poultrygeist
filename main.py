@@ -26,7 +26,7 @@ video = True
 play = False
 
 # Initialise the game settings
-options = {}
+options = {'audio': 'on'}
 
 selectionint = 1
 scene = 0
@@ -71,7 +71,7 @@ while running:
 
    if scene == 1:
       # Display the Options menu buttons
-      button("Sound off", 200, 85, 1)
+      button("Sound: "+options.get('audio').upper(), 200, 85, 1)
       button("res1", 200, 185, 2)
       button("res2", 200, 285, 3)
       button("Back", 200, 385, 4)
@@ -112,8 +112,8 @@ while running:
             elif event.key in [pygame.K_RETURN]:
                if selectionint == 1:
                   #sound toggle thing here
-                  res = ("0")
-                  print(res)
+                  options['audio'] = 'off' if options['audio'] == 'on' else 'on'
+                  pygame.mixer.music.set_volume(int(not pygame.mixer.music.get_volume()))
                elif selectionint == 2:
                   res = ("1")
                   print(res)

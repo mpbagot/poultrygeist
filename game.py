@@ -104,6 +104,12 @@ class Application(ShowBase):
 		# Add the sceneMgr events to run as a task
 		taskMgr.add(self.sceneMgr.runSceneTasks, "scene-tasks")
 
+	def loadSettings(self, options):
+		'''
+		Iterate a dictionary of settings and apply them to the game
+		'''
+		pass
+
 	def move(self, forward, dir, elapsed):
 		'''
 		Move the camera forward or backwards
