@@ -26,7 +26,7 @@ video = True
 play = False
 
 # Initialise the game settings
-options = {'audio': 'on'}
+options = {'audio': 'on', 'resolution': '720p', 'quality':'low'}
 
 selectionint = 1
 scene = 0
@@ -42,15 +42,16 @@ def button(str, coordx, coordy, buttonint):
    buttontext = font.render(str, 1,(255,255,255))
    # Set the rect coordinates
    a = [coordx-buttontext.get_rect().width//2, coordy, buttontext.get_rect().width+50, 50]
-
+   # Draw the background rectangle of the button
    pygame.draw.rect(screen, BLACK, a)
    if buttonint == selectionint :
       pygame.draw.rect(screen, RED, a)
+   # Blit the text on the top of the button
    screen.blit(buttontext, (coordx-buttontext.get_rect().width//2+25, coordy+15))
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
-
+# Load the background image
 background_image = pygame.image.load("resources/generic/chicken.jpg").convert()
 
 running = True
@@ -72,8 +73,8 @@ while running:
    if scene == 1:
       # Display the Options menu buttons
       button("Sound: "+options.get('audio').upper(), 200, 85, 1)
-      button("res1", 200, 185, 2)
-      button("res2", 200, 285, 3)
+      button("Resolution: "+options.get('resolution'), 200, 185, 2)
+      button("Quality: "+options.get('quality').title(), 200, 285, 3)
       button("Back", 200, 385, 4)
       if selectionint >=4:
          selectionint =4
@@ -89,8 +90,10 @@ while running:
                   # Play the game
                   running = False
                   video = False
-                  app = Application()
+                  app = Application(options.get('quality'))
                   app.loadSettings(options)
+                  pygame.display.quit()
+                  pygame.quit()
                   app.run()
                elif selectionint == 3:
                   # Exit the game
@@ -105,7 +108,7 @@ while running:
             elif event.key in [pygame.K_s, pygame.K_DOWN]:
                 selectionint+=1
 
-      if scene == 1:
+      elif scene == 1:
          if event.type == pygame.KEYDOWN:
             if event.key in [pygame.K_w, pygame.K_UP]:
                selectionint-=1
@@ -115,12 +118,9 @@ while running:
                   options['audio'] = 'off' if options['audio'] == 'on' else 'on'
                   pygame.mixer.music.set_volume(int(not pygame.mixer.music.get_volume()))
                elif selectionint == 2:
-                  res = ("1")
-                  print(res)
+                  options['resolution'] = '1080p' if options['resolution'] == '720p' else '720p'
                elif selectionint == 3:
-                  #resolution 2
-                  res = ("2")
-                  print(res)
+                  options['quality'] = 'super-low'
                elif selectionint == 4:
                   scene = 0
 

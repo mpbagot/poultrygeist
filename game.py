@@ -33,11 +33,13 @@ class Application(ShowBase):
 	The default Application class which holds the code for
 	Panda3D to run the game
 	'''
-	def __init__(self):
+	def __init__(self, quality):
 		# Set the model quality, (super-low, low or high)
-		self.quality = "super-low"
+		self.quality = quality
 		print("[>] PoultryGeist:\t      Setting Model Resolution to {}".format(
 		self.quality.upper()))
+
+		load_prc_file_data("", "win-size 1920 1080")
 
 		# Run the standard Showbase init if running in super-low resolution mode
 		# Do some stuff if the game is running at normal or high resolution
@@ -75,10 +77,8 @@ class Application(ShowBase):
 		# Initialise the movement controller
 		self.controller = None
 
-
 		# Turn off normal mouse controls
 		self.disableMouse()
-
 
 		# Hide the cursor
 		self.props = WindowProperties()
@@ -108,7 +108,22 @@ class Application(ShowBase):
 		'''
 		Iterate a dictionary of settings and apply them to the game
 		'''
-		pass
+		# Toggle the audio based on the options
+		if options.get('audio', 'on') == 'off':
+			base.disableAllAudio()
+		windowProperties = WindowProperties()
+		# Set the resolution
+		if options.get('resolution') == '720p':
+			windowProperties.setSize(1280, 720)
+			# Set the app width and height variables
+			self.width, self.height = (1280, 720)
+		else:
+			windowProperties.setSize(1920, 1080)
+			# Set the app width and height variables
+			self.width, self.height = (1920, 1080)
+		# Apply the properties to the window
+		base.win.requestProperties(windowProperties)
+		load_prc_file_data('', 'win-size {} {}'.format(self.width, self.height))
 
 	def move(self, forward, dir, elapsed):
 		'''
@@ -131,7 +146,7 @@ class SceneManager:
 	def __init__(self, app):
 		self.app = app
 		self.scene = None
-		self.loadScene(MenuScene(app))
+		self.loadScene(IntroClipScene(app))
 
 		# Set the current viewing target
 		self.focus = LVector3(55, -55, 20)
@@ -257,4 +272,4 @@ class SceneManager:
 if __name__ == '__main__':
 	# Run the application
 	# MainMenu(Application).run()
-	Application().run()
+	Application('super-low').run()
