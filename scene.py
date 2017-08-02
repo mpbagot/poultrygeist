@@ -121,9 +121,9 @@ class Scene:
 		'''
 		pass
 
-class MenuScene(Scene):
+class IntroClipScene(Scene):
 	'''
-	A subclass of the Scene class to handle the main menu
+	A subclass of the Scene class to handle the intro clip
 	and all of it's required tasks + events
 	'''
 	def __init__(self, app):
@@ -213,6 +213,14 @@ class IntroScene(Scene):
 			self.renderTree.setFog(fog)
 			# Set the scene's background colour
 			base.setBackgroundColor(0.635, 0.454, 0.494)
+			# Create an empty ambient light
+			alight = AmbientLight('alight')
+			# Set the colour
+			alight.setColor(VBase4(0.2, 0.2, 0.2, 0.2))
+			# Attach the node to the render tree
+			alnp = render.attachNewNode(alight)
+			# Set the light to illuminate the scene
+			render.setLight(alnp)
 
 		# Add the two chickens and set the maximum velocity (force) on them
 		self.chickenOne = Chicken(self, (20, -50, 0))
