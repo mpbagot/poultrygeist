@@ -101,6 +101,10 @@ class Application(ShowBase):
 		# Initialise the SceneManager
 		self.sceneMgr = SceneManager(self)
 
+		# Initialise the collision traverser
+		self.collisionTraverser = CollisionTraverser('main_traverser')
+		base.cTrav = self.collisionTraverser
+
 		# Add the sceneMgr events to run as a task
 		taskMgr.add(self.sceneMgr.runSceneTasks, "scene-tasks")
 
@@ -135,8 +139,7 @@ class Application(ShowBase):
 		else:
 			self.sceneMgr.focus -= dir * elapsed * 30
 		# Set the position of the camera based on the direction
-		self.sceneMgr.scene.player.nodePath.setPos(self.sceneMgr.focus - (dir * 5))
-		print(self.sceneMgr.scene.player.nodePath.getPos())
+		self.camera.setPos(self.sceneMgr.focus - (dir * 5))
 
 	def dumpTree(self):
 		for a in self.render.getChildren():
