@@ -322,48 +322,24 @@ class SceneOne(Scene):
 		self.aiWorld = AIWorld(self.renderTree)
 
 		# Create a force node for the physics engine
-		self.gravityForceNode = ForceNode('gravity')
-		# Apply gravitational level of force to it
-		gravityForce = LinearVectorForce(0, 0, -0.3)
-		# Add the force to the force node
-		self.gravityForceNode.addForce(gravityForce)
-		# Attach the node to the tree
-		gravityNodePath = self.renderTree.attachNewNode(self.gravityForceNode)
-		# Add the force to the physics manager
-		self.app.physicsMgr.addLinearForce(gravityForce)
+		# self.gravityForceNode = ForceNode('gravity')
+		# # Apply gravitational level of force to it
+		# gravityForce = LinearVectorForce(0, 0, -0.3)
+		# # Add the force to the force node
+		# self.gravityForceNode.addForce(gravityForce)
+		# # Attach the node to the tree
+		# gravityNodePath = self.renderTree.attachNewNode(self.gravityForceNode)
+		# # Add the force to the physics manager
+		# self.app.physicsMgr.addLinearForce(gravityForce)
 
 		# Add the map to the scene
-		self.addObject("scene1.bam", pos=(10, 10, -25), scale=(3.6,3.6,3.6), key="ground", isGeneric=self.app.quality != 'super-low')
+		self.addObject("scene1.bam", pos=(0, 10, -18), scale=(3.6,3.6,3.6), key="ground", isGeneric=self.app.quality != 'super-low')
 
+		# Add the player to the scene
 		self.player = Player(self.app)
 		self.player.addToScene()
 
-		# self.groundNodePath = self.addColliderNode()
-		# self.groundCollider = CollisionPlane()
-		# self.groundNodePath.node().addSolid(self.groundCollider)
-		# self.groundNodePath.show()
 
-		# # Add the capsule shape for the player
-		# playerColliderShape = BulletCapsuleShape(0.5, 3, ZUp)
-		#
-		# # Add the character controller
-		# self.playerController = BulletCharacterControllerNode(playerColliderShape, 1, 'Player')
-		# self.playerNodePath = self.renderTree.attachNewNode(self.playerController)
-		# self.playerNodePath.setPos(0, 0, 3.2)
-		# self.playerNodePath.setCollideMask(BitMask32.allOn())
-		#
-		# # Add the player to the bullet world
-		# self.bulletWorld.attachCharacter(self.playerNodePath.node())
-		#
-		# debugNode = BulletDebugNode('Debug')
-		# debugNode.showWireframe(True)
-		# debugNode.showConstraints(True)
-		# debugNode.showBoundingBoxes(True)
-		# debugNode.showNormals(True)
-		# debugNodePath = self.renderTree.attachNewNode(debugNode)
-		# debugNodePath.show()
-		#
-		# self.bulletWorld.setDebugNode(debugNodePath.node())
 
 	def eventRun(self, task):
 		'''
