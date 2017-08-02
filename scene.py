@@ -333,7 +333,9 @@ class SceneOne(Scene):
 		# self.app.physicsMgr.addLinearForce(gravityForce)
 
 		# Add the map to the scene
+		self.addObject('roof.bam', pos=(0, 10, -18), scale=(3.6, 3.6, 3.6), key='roof', isGeneric=self.app.quality != 'super-low')
 		self.addObject("scene1.bam", pos=(0, 10, -18), scale=(3.6,3.6,3.6), key="ground", isGeneric=self.app.quality != 'super-low')
+		self.addObject('floor.bam', pos=(0, 10, -18), scale=(3.6, 3.6, 3.6), key='roof', isGeneric=self.app.quality != 'super-low')
 
 		# Add the player to the scene
 		self.player = Player(self.app)
