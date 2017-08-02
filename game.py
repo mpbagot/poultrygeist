@@ -138,6 +138,10 @@ class Application(ShowBase):
 		self.sceneMgr.scene.player.nodePath.setPos(self.sceneMgr.focus - (dir * 5))
 		print(self.sceneMgr.scene.player.nodePath.getPos())
 
+	def dumpTree(self):
+		for a in self.render.getChildren():
+			print(a)
+
 class SceneManager:
 	'''
 	The SceneManager to handle the events and tasks of each scene as well as
@@ -256,11 +260,10 @@ class SceneManager:
 		if self.last == 0:
 			elapsed = 0
 
-		# TODO Dunno what this is for
 		self.focus = self.app.camera.getPos() + (dir * 5)
 		return Task.cont
 
-	def bobCamera(self, task, magnitude=5, speed=4):
+	def bobCamera(self, task, magnitude=1, speed=4):
 		'''
 		Bob the camera up and down
 		'''
