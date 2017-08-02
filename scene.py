@@ -136,6 +136,7 @@ class IntroClipScene(Scene):
 		self.loader = app.loader
 		self.renderTree = deepcopy(app.emptyRenderTree)
 
+
 		# Add the play button
 		# playButton = DirectButton(text=('normal','pressed','rollover','disabled'),
 		# 						pos=(0,0,0), frameSize=(-0.3, 0.3, -0.1, 0.1),
@@ -294,7 +295,7 @@ class IntroScene(Scene):
 
 	def fadeIn(self, task):
 		'''
-		Fade in the scene by fading a big, black rectangle
+		Fade in the scene by fading a black rectangle
 		'''
 		# If more than 4 seconds have passed then finish the task
 		if task.time > 4:
@@ -331,12 +332,11 @@ class SceneOne(Scene):
 		# Add the force to the physics manager
 		self.app.physicsMgr.addLinearForce(gravityForce)
 
+		# Add the map to the scene
+		self.addObject("scene1.bam", pos=(10, 10, -25), scale=(3.6,3.6,3.6), key="ground", isGeneric=self.app.quality != 'super-low')
+
 		self.player = Player(self.app)
 		self.player.addToScene()
-
-		# self.addObject('scene1.bam', scale=(10, 10, 10), key="main_ground", isGeneric=True)
-		self.addObject("scene1.bam", scale=(3.6,3.6,3.6), key="ground", isGeneric=True)
-
 
 		# self.groundNodePath = self.addColliderNode()
 		# self.groundCollider = CollisionPlane()
