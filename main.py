@@ -120,7 +120,8 @@ while running:
                elif selectionint == 2:
                   options['resolution'] = '1080p' if options['resolution'] == '720p' else '720p'
                elif selectionint == 3:
-                  options['quality'] = 'super-low'
+                  opt = options['quality']
+                  options['quality'] = 'super-low' if opt == 'low' else ('low' if opt == 'high' else 'high')
                elif selectionint == 4:
                   scene = 0
 
