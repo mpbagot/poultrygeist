@@ -28,7 +28,7 @@ from scene import *
 
 # from main_menu import *
 
-class Application(ShowBase):
+class Application(ShowBase, object):
 	'''
 	The default Application class which holds the code for
 	Panda3D to run the game
@@ -47,7 +47,7 @@ class Application(ShowBase):
 			# Construct and create the pipeline
 			self.render_pipeline = RenderPipeline()
 			self.render_pipeline.pre_showbase_init()
-			super().__init__()
+			super(Application, self).__init__()
 			self.render_pipeline.create(self)
 			# Enable anti-aliasing for the game
 			render.setAntialias(AntialiasAttrib.MAuto)
@@ -55,7 +55,7 @@ class Application(ShowBase):
 			self.render_pipeline.daytime_mgr.time = "20:15"
 
 		else:
-			super().__init__()
+			super(Application, self).__init__()
 			# Enable the filter handler
 			self.filters = CommonFilters(base.win, base.cam)
 			self.filters.setAmbientOcclusion()
@@ -87,6 +87,7 @@ class Application(ShowBase):
 		# Lower the FOV to make the game more difficult
 		self.win.requestProperties(self.props)
 		self.camLens.setFov(60)
+		self.camLens.setNear(0.1)
 
 		# Store and empty renderTree for later use
 		self.emptyRenderTree = deepcopy(self.render)
@@ -95,6 +96,7 @@ class Application(ShowBase):
 		# TODO remove this and overhaul the button handling
 		self.w_button = KeyboardButton.ascii_key('w'.encode())
 		self.s_button = KeyboardButton.ascii_key('s'.encode())
+		self.l_button = KeyboardButton.ascii_key('l'.encode())
 
 		self.switch_button = KeyboardButton.ascii_key('p'.encode())
 
@@ -104,6 +106,7 @@ class Application(ShowBase):
 		# Initialise the collision traverser
 		self.collisionTraverser = CollisionTraverser('main_traverser')
 		base.cTrav = self.collisionTraverser
+		base.cTrav.showCollisions(self.render)
 
 		# Add the sceneMgr events to run as a task
 		taskMgr.add(self.sceneMgr.runSceneTasks, "scene-tasks")
@@ -229,6 +232,9 @@ class SceneManager:
 		# Check for an s press and move backwards
 		if is_down(self.app.s_button):
 			self.app.move(False, dir, elapsed)
+		# Check for an s press and move backwards
+		if is_down(self.app.l_button):
+			print(self.app.camera.getPos())
 		# Check for a scene switch and switch the scene
 		if is_down(self.app.switch_button):
 			self.loadScene(MenuScene(self.app) if isinstance(self.scene, IntroScene) else IntroScene(self.app))
@@ -266,7 +272,7 @@ class SceneManager:
 		self.focus = self.app.camera.getPos() + (dir * 5)
 		return Task.cont
 
-	def bobCamera(self, task, magnitude=1, speed=4):
+	def bobCamera(self, task, magnitude=0.3, speed=4):
 		'''
 		Bob the camera up and down
 		'''
