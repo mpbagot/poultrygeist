@@ -11,7 +11,8 @@ class Chicken:
         self.pos = pos
 
         # Set up some AI variables
-        self.modelNodePath = scene.addObject('chicken.egg', pos=pos, scale=(0.3, 0.3, 0.3), isActor=True, isGeneric=True, anims={'walk':'resources/generic/chicken-walk.egg'})
+        self.modelNodePath = scene.addObject('chicken.egg', pos=pos, scale=(0.7, 0.7, 0.7), isActor=True, isGeneric=True, anims={'walk':'resources/generic/chicken-walk'})
+        self.modelNodePath.loop('walk')
         self.aiChar = AICharacter("chicken", self.modelNodePath, 300, 0.05, 1)
         self.aiBehaviour = self.aiChar.getAiBehaviors()
 
