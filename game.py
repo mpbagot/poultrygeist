@@ -87,8 +87,8 @@ class Application(ShowBase, object):
 		# Lower the FOV to make the game more difficult
 		self.win.requestProperties(self.props)
 		self.camLens.setFov(60)
+		# Reduces the distance of which the camera can render objects close to it
 		self.camLens.setNear(0.1)
-
 		# Store and empty renderTree for later use
 		self.emptyRenderTree = deepcopy(self.render)
 

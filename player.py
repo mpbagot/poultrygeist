@@ -1,8 +1,10 @@
+# Import image postprocessin operations
 from direct.filter.CommonFilters import CommonFilters
 from panda3d.core import *
 
 class Player:
     def __init__(self, app):
+        # Controls screen brightness
         self.eyeExposure = 0.5
         self.app = app
         self.pos = (0, 0, 0)
@@ -21,9 +23,12 @@ class Player:
         '''
         Initialise the player in the currently loaded scene.
         '''
+        # Unpack tuple into list
         pos = list(self.pos)
+        # Gives the player height
         pos[2] += 3.5
         self.app.camera.setPos(*pos)
+
         # Set up the collider shape around the camera
         self.colliderNodePath = self.app.render.attachNewNode(CollisionNode('playerCollNode'))
         # Create a new collider box
@@ -43,3 +48,4 @@ class Player:
         # Register the collision handlers with the collision traverser
         self.app.collisionTraverser.addCollider(self.colliderNodePath, self.pusher)
         # self.app.collisionTraverser.addCollider(self.colliderNodePath, self.gravity)
+
