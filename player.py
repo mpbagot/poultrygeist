@@ -25,20 +25,21 @@ class Player:
         pos[2] += 3.5
         self.app.camera.setPos(*pos)
         # Set up the collider shape around the camera
-        self.colliderNodePath = self.app.camera.attachNewNode(CollisionNode('playerCollNode'))
-        self.collider = CollisionTube(self.pos[0], self.pos[1], self.pos[2]+4, self.pos[0], self.pos[1], self.pos[2]+0.1, 0.9)
+        self.colliderNodePath = self.app.render.attachNewNode(CollisionNode('playerCollNode'))
+        # Create a new collider box
+        self.collider = CollisionBox(Point3(pos[0], pos[1], pos[2]-2), 0.4, 0.4, 2)
         self.colliderNodePath.node().addSolid(self.collider)
         self.colliderNodePath.show()
         # Set up the collider ray for gravity
-        self.ray = CollisionRay(0, 0, 0, 0, 0, -1)
-        self.colliderNodePath.node().addSolid(self.ray)
+        # self.ray = CollisionRay(0, 0, 0, 0, 0, -1)
+        # self.colliderNodePath.node().addSolid(self.ray)
         # Add the collision handler
         self.pusher = CollisionHandlerPusher()
         self.pusher.addCollider(self.colliderNodePath, self.app.camera)
         # Add the gravity handler
-        self.gravity = CollisionHandlerFloor()
-        self.gravity.addCollider(self.colliderNodePath, self.app.camera)
+        # self.gravity = CollisionHandlerFloor()
+        # self.gravity.addCollider(self.colliderNodePath, self.app.camera)
 
         # Register the collision handlers with the collision traverser
         self.app.collisionTraverser.addCollider(self.colliderNodePath, self.pusher)
-        self.app.collisionTraverser.addCollider(self.colliderNodePath, self.gravity)
+        # self.app.collisionTraverser.addCollider(self.colliderNodePath, self.gravity)
