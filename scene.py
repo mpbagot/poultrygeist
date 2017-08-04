@@ -225,9 +225,9 @@ class IntroScene(Scene):
 
 		# Add the two chickens and set the maximum velocity (force) on them
 		self.chickenOne = Chicken(self, (20, -50, 0))
-		self.chickenOne.aiChar.setMaxForce(30)
+		self.chickenOne.aiChar.setMaxForce(70)
 		self.chickenTwo = Chicken(self, (-20, -40, 0))
-		self.chickenTwo.aiChar.setMaxForce(30)
+		self.chickenTwo.aiChar.setMaxForce(70)
 
 		# Add them to the AI World
 		self.AIworld.addAiChar(self.chickenOne.aiChar)
@@ -321,26 +321,30 @@ class SceneOne(Scene):
 		# Add the AIWorld
 		self.aiWorld = AIWorld(self.renderTree)
 
-		# Create a force node for the physics engine
-		# self.gravityForceNode = ForceNode('gravity')
-		# # Apply gravitational level of force to it
-		# gravityForce = LinearVectorForce(0, 0, -0.3)
-		# # Add the force to the force node
-		# self.gravityForceNode.addForce(gravityForce)
-		# # Attach the node to the tree
-		# gravityNodePath = self.renderTree.attachNewNode(self.gravityForceNode)
-		# # Add the force to the physics manager
-		# self.app.physicsMgr.addLinearForce(gravityForce)
-
 		# Add the map to the scene
-		self.addObject('roof.bam', pos=(0, 10, -18), scale=(3.6, 3.6, 3.6), key='roof', isGeneric=self.app.quality != 'super-low')
-		self.addObject("scene1.bam", pos=(0, 10, -18), scale=(3.6,3.6,3.6), key="ground", isGeneric=self.app.quality != 'super-low')
-		self.addObject('floor.bam', pos=(0, 10, -18), scale=(3.6, 3.6, 3.6), key='roof', isGeneric=self.app.quality != 'super-low')
+		self.addObject('roof.bam', pos=(15, 10, -4), scale=(3.6, 3.6, 3.6), key='roof', isGeneric=self.app.quality != 'super-low')
+		self.addObject("scene1.bam", pos=(15, 10, -4), scale=(3.6,3.6,3.6), key="ground", isGeneric=self.app.quality != 'super-low')
+		self.addObject('floor.bam', pos=(15, 10, -4), scale=(3.6, 3.6, 3.6), key='floor', isGeneric=self.app.quality != 'super-low')
+
+		# Add the map collider to the scene
+		# self.mapCollider = self.renderTree.attachNewNode(CollisionNode('mapCollider'))
+		self.mapColl = self.app.loader.loadModel('resources/generic/map_coll.egg')
+		self.mapColl.reparentTo(self.renderTree)
+		# Set the position and scale
+		self.mapColl.setPos(15, 10, -4)
+		self.mapColl.setScale(3.6, 3.6, 3.6)
+		self.mapColl.show()
+		# self.mapCollider.show()
 
 		# Add the player to the scene
 		self.player = Player(self.app)
 		self.player.addToScene()
 
+		# Generate a list of light positions for the map
+		light_pos = [(15.45, 0.5, 6), (54.62, -227.6, 6), (86.83, -227.38, 6)]
+		# Iterate and place a light at that position
+		for light in light_pos:
+			pass
 
 
 	def eventRun(self, task):
